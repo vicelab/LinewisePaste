@@ -1,4 +1,5 @@
 ; This script pastes either by stripping out tabs or by typing out the clipboard contents (replacing line feeds with down arrows)
+; This can be useful when constructing lists of file names and entering them into an ArcMap Batch window
 ; Written by A. Anderson using AutoIt
 
 
@@ -10,11 +11,13 @@ Global $makeanException = False
 $dll = DllOpen("user32.dll")
 AutoItSetOption( "WinTitleMatchMode", 2)
 
-;HotKeySet("{Pause}", "TerminateLP") ; Press Pause/Break to terminate script
 HotKeySet("!z", "Lpaste") ; Alt-z
 HotKeySet("!v", "Tpaste") ; Alt-v
+HotKeySet("{PAUSE}", "stopThePresses")
 
-MsgBox($MB_SYSTEMMODAL, "LinewisePaste", "Use ALT-V to paste stripping out TABs." & @CRLF & @CRLF & "Use ALT-Z to paste a clipboard as individual letters," & @CRLF & "replacing line feeds w/ DOWN keys." & @CRLF & @CRLF & "To close the program, right-click the icon in the system tray.")
+MsgBox($MB_SYSTEMMODAL, "LinewisePaste                                           rev. 2018-02-06", "Use ALT-V to paste stripping out TABs." & @CRLF & @CRLF & "Use ALT-Z to type out the clipboard as individual letters," & @CRLF & "replacing line feeds with DOWN keys." & @CRLF & @CRLF & "Pressing PAUSE will halt a typing Paste." & @CRLF & @CRLF & "To close the program, right-click the icon in the system tray.")
+$goOn = True
+
 
 While 1
    Sleep(10000)
@@ -25,6 +28,9 @@ WEnd
 ;  Exit
 ;EndFunc   ;==>Terminate
 
+Func stopThePresses()
+   $goOn = False
+EndFunc ;==>stopThePresses
 
 Func Lpaste()
    $s = ClipGet()
@@ -36,10 +42,14 @@ Func Lpaste()
 	  $line = StringSplit($sSplit[$i], "")
 	  For $j =  1 To UBound($line)-1
 		 Send($line[$j])
+		 if $goOn == False Then
+			ExitLoop(2)
+		 EndIf
 	  Next
 	  Sleep(200)
 	  Send("{DOWN}")
    Next
+   $goOn = True
 EndFunc   ;==>Lpaste
 
 
