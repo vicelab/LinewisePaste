@@ -5,12 +5,17 @@
 
 #include <MsgBoxConstants.au3>
 #include <StringConstants.au3>
+#include <Misc.au3>
+
+Local $hDLL = DllOpen("user32.dll")
 
 Global $g_bPaused = False
 Global $makeanException = False
 $dll = DllOpen("user32.dll")
+
 AutoItSetOption( "WinTitleMatchMode", 2)
 
+HotKeySet("!d", "Dpaste") ; Alt-d
 HotKeySet("!z", "Lpaste") ; Alt-z
 HotKeySet("!v", "Tpaste") ; Alt-v
 HotKeySet("{PAUSE}", "stopThePresses")
@@ -32,6 +37,37 @@ Func stopThePresses()
    $goOn = False
 EndFunc ;==>stopThePresses
 
+Func Dpaste()
+   Local $hDLL = DllOpen("user32.dll")
+   $s = ClipGet()
+   Sleep(700)
+   $sSplit = StringSplit($s, @CRLF, $STR_ENTIRESPLIT)
+
+   For $i = 1 To UBound($sSplit)-1
+	  ;Sleep(200)
+	  $line = StringSplit($sSplit[$i], "")
+	  For $j =  1 To UBound($line)-1
+		 Send($line[$j])
+		 if $goOn == False Then
+			ExitLoop(2)
+		 EndIf
+	  Next
+	  Send("{DOWN}")
+	  While 1
+		 If _IsPressed("2D", $hDLL) Then
+			; Wait until key is released.
+			While _IsPressed("2D", $hDLL)
+			   Sleep(50)
+			WEnd
+			ExitLoop
+         EndIf
+		 Sleep(50)
+	  WEnd
+   Next
+   $goOn = True
+   DllClose($hDLL)
+EndFunc   ;==>Dpaste
+
 Func Lpaste()
    $s = ClipGet()
    Sleep(700)
@@ -46,8 +82,8 @@ Func Lpaste()
 			ExitLoop(2)
 		 EndIf
 	  Next
-	  Sleep(200)
 	  Send("{DOWN}")
+	  Sleep(200)
    Next
    $goOn = True
 EndFunc   ;==>Lpaste
@@ -61,10 +97,12 @@ Func Tpaste()
 	  $t = $t & $sSplit[$i]
    Next
    ClipPut($t)
-   Sleep(700)
+   Sleep(500)
    Send("^v")
+   Sleep(500)
    ClipPut($s)
 EndFunc   ;==>Tpaste
+
 
 
 
